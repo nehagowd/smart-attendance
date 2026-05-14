@@ -1,0 +1,10 @@
+{% extends "base_admin.html" %}
+{% block title %}Export{% endblock %}
+{% block content %}
+<h1>Export Data</h1>
+<div class="card">
+  <p>Download all attendance rows (joined with student, subject, and class timing).</p>
+  <a class="btn btn-primary" href="{{ url_for('admin.export_data', format='csv') }}">Download CSV</a>
+  <a class="btn btn-ghost" href="{{ url_for('admin.export_data', format='xlsx') }}">Download Excel (.xlsx)</a>
+</div>
+{% endblock %}

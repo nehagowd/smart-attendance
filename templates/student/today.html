@@ -1,0 +1,31 @@
+{% extends "base_student.html" %}
+{% block title %}Today's Classes{% endblock %}
+{% block content %}
+<h1>Today's Classes</h1>
+<div class="card">
+  <table>
+    <thead><tr><th>Subject</th><th>Time</th><th>Window</th></tr></thead>
+    <tbody>
+      {% for c in classes %}
+      <tr>
+        <td>{{ c.subject_name }} ({{ c.subject_code }})</td>
+        <td>{{ c.start_time }} – {{ c.end_time }}</td>
+        <td>
+          {% if c.state == 'open' %}
+          <span class="badge badge-ok">Attendance open</span>
+          {% elif c.state == 'closed' %}
+          <span class="badge badge-bad">Attendance closed</span>
+          {% elif c.state == 'outside_class' %}
+          <span class="badge badge-warn">Not in session</span>
+          {% else %}
+          <span class="badge badge-warn">{{ c.state }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">No classes scheduled for you today.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

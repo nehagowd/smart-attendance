@@ -1,0 +1,33 @@
+{% extends "base_student.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ student.full_name }}</h1>
+<div class="grid cols-2">
+  <div class="card">
+    <h2>Profile summary</h2>
+    <p><strong>USN:</strong> {{ student.usn }}</p>
+    <p><strong>Department:</strong> {{ student.department }}</p>
+    <p><strong>Semester:</strong> {{ student.semester }}</p>
+    <p><strong>Overall attendance:</strong> {{ overall_pct }}%</p>
+  </div>
+  <div class="card">
+    <h2>Active class</h2>
+    {% if active %}
+    <p><strong>Subject:</strong> {{ active_subject }}</p>
+    <p><strong>Slot:</strong> {{ active.start_time }} – {{ active.end_time }}</p>
+    <p><strong>Window state:</strong>
+      {% if state == 'open' %}
+      <span class="badge badge-ok">Open (first 10 min)</span>
+      {% elif state == 'closed' %}
+      <span class="badge badge-bad">Closed</span>
+      {% else %}
+      <span class="badge badge-warn">{{ state }}</span>
+      {% endif %}
+    </p>
+    {% else %}
+    <p>No Active Class Right Now</p>
+    {% endif %}
+    <p style="margin-top:1rem;color:#94a3b8">{{ attendance_note }}</p>
+  </div>
+</div>
+{% endblock %}

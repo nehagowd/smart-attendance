@@ -1,0 +1,44 @@
+{% extends "base_admin.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+<p style="color:#94a3b8">Today (server date): <strong>{{ today }}</strong></p>
+
+<div class="card">
+  <h2>Daily attendance (last 30 days)</h2>
+  <table>
+    <thead><tr><th>Date</th><th>Total marks</th><th>Present</th><th>%</th></tr></thead>
+    <tbody>
+      {% for d in daily %}
+      <tr>
+        <td>{{ d.d }}</td>
+        <td>{{ d.total }}</td>
+        <td>{{ d.present_cnt }}</td>
+        <td>{% if d.total %}{{ (100 * d.present_cnt / d.total)|round(1) }}{% else %}0{% endif %}%</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">No attendance yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="grid cols-2">
+  <div class="card">
+    <h2>By subject</h2>
+    {% for r in by_subject %}
+    <p><strong>{{ r.subject_name }}</strong>: {{ r.total }} records, {{ r.present_cnt }} present</p>
+    {% else %}
+    <p>No data.</p>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <h2>By department</h2>
+    {% for r in by_dept %}
+    <p><strong>{{ r.department }}</strong>: {{ r.total }} records, {{ r.present_cnt }} present</p>
+    {% else %}
+    <p>No data.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

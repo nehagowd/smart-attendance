@@ -1,0 +1,126 @@
+{% extends "base_admin.html" %}
+{% block title %}Attendance{% endblock %}
+{% block content %}
+<h1>Attendance Records</h1>
+
+<div class="card">
+  <h2>Filters</h2>
+  <form method="get" class="grid">
+    <div>
+      <label>Subject</label>
+      <select name="subject_id">
+        <option value="">All</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}" {% if filters.subject_id and filters.subject_id|int == s.id %}selected{% endif %}>{{ s.subject_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Student</label>
+      <select name="student_id">
+        <option value="">All</option>
+        {% for s in students %}
+        <option value="{{ s.id }}" {% if filters.student_id and filters.student_id|int == s.id %}selected{% endif %}>{{ s.usn }} — {{ s.full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Class date</label>
+      <input type="date" name="date" value="{{ filters.date or '' }}">
+    </div>
+    <div>
+      <label>Department</label>
+      <input type="text" name="department" value="{{ filters.department or '' }}" placeholder="CSE">
+    </div>
+    <div>
+      <label>Semester</label>
+      <input type="number" name="semester" value="{{ filters.semester or '' }}" min="1" max="12">
+    </div>
+    <div>
+      <label>Class session</label>
+      <select name="class_id">
+        <option value="">All</option>
+        {% for c in classes %}
+        <option value="{{ c.id }}" {% if filters.class_id and filters.class_id|int == c.id %}selected{% endif %}>{{ c.class_date }} {{ c.start_time }} {{ c.subject_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="align-self:end">
+      <button class="btn btn-primary" type="submit">Apply</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin.attendance_records') }}">Clear</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Manual entry</h2>
+  <form method="post" action="{{ url_for('admin.attendance_manual') }}">
+    <label>Student</label>
+    <select name="student_id" required>
+      {% for s in students %}
+      <option value="{{ s.id }}">{{ s.usn }} — {{ s.full_name }}</option>
+      {% endfor %}
+    </select>
+    <label>Class</label>
+    <select name="class_id" required>
+      {% for c in classes %}
+      <option value="{{ c.id }}">{{ c.class_date }} {{ c.start_time }}–{{ c.end_time }} {{ c.subject_name }}</option>
+      {% endfor %}
+    </select>
+    <label>Status</label>
+    <select name="status">
+      <option>Present</option>
+      <option>Absent</option>
+    </select>
+    <button class="btn btn-primary" type="submit">Save</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Records</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>USN</th><th>Subject</th><th>Dept</th><th>Sem</th>
+        <th>Class date</th><th>Slot</th><th>Marked at</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.usn }}</td>
+        <td>{{ r.subject_name }}</td>
+        <td>{{ r.department }}</td>
+        <td>{{ r.semester }}</td>
+        <td>{{ r.class_date }}</td>
+        <td>{{ r.start_time }}–{{ r.end_time }}</td>
+        <td>{{ r.attendance_time }}</td>
+        <td>
+          {% if r.status == 'Present' %}
+          <span class="badge badge-ok">Present</span>
+          {% else %}
+          <span class="badge badge-bad">{{ r.status }}</span>
+          {% endif %}
+        </td>
+        <td>
+          <form method="post" action="{{ url_for('admin.attendance_edit', aid=r.id) }}" style="margin-bottom:0.5rem">
+            <select name="status" style="max-width:120px;margin-bottom:0.25rem">
+              <option {% if r.status=='Present' %}selected{% endif %}>Present</option>
+              <option {% if r.status=='Absent' %}selected{% endif %}>Absent</option>
+            </select>
+            <input type="datetime-local" name="attendance_time" value="{{ r.attendance_time[0:10] }}T{{ r.attendance_time[11:16] }}" style="max-width:180px">
+            <button type="submit" class="btn btn-primary" style="padding:0.25rem 0.5rem;font-size:0.8rem">Update</button>
+          </form>
+          <form method="post" action="{{ url_for('admin.attendance_delete', aid=r.id) }}" onsubmit="return confirm('Delete?');">
+            <button type="submit" class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="10">No records.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

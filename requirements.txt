@@ -1,0 +1,6 @@
+# Core dependencies (installs cleanly on Windows without compiling dlib)
+Flask>=2.3.0
+Werkzeug>=2.3.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+openpyxl>=3.1.0

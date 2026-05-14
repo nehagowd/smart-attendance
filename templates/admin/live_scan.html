@@ -1,0 +1,106 @@
+{% extends "base_admin.html" %}
+{% block title %}Live Scan{% endblock %}
+{% block content %}
+<h1>Live Attendance Scan</h1>
+<p style="color:#94a3b8;max-width:640px">
+  Use the classroom webcam. Select the class that is <strong>in session right now</strong>, then capture each student’s face.
+  Attendance is recorded only during the <strong>first 10 minutes</strong> after that class’s start time, and only for students in the same department and semester as the scheduled class.
+</p>
+
+{% if not sessions %}
+<div class="card">
+  <p class="error-msg">No class is in session right now (no scheduled slot for today matches the current time).</p>
+  <p><a href="{{ url_for('admin.schedule_list') }}">Go to Schedule Class</a></p>
+</div>
+{% else %}
+<div class="card">
+  <label for="class_id">Class in session</label>
+  <select id="class_id" style="max-width:100%">
+    {% for s in sessions %}
+    <option value="{{ s.id }}" data-window="{{ s.window_state }}" {% if default_class_id == s.id %}selected{% endif %}>
+      {{ s.department }} Sem {{ s.semester }} — {{ s.subject_name }}
+      ({{ s.start_time }}–{{ s.end_time }})
+      {% if s.window_state == 'open' %}[window OPEN]{% elif s.window_state == 'closed' %}[window CLOSED]{% else %}[{{ s.window_state }}]{% endif %}
+    </option>
+    {% endfor %}
+  </select>
+  <p id="window-hint" style="font-size:0.9rem;color:#94a3b8;margin-top:0.5rem"></p>
+</div>
+
+<div class="card">
+  <div class="video-wrap">
+    <video id="cam" autoplay playsinline muted></video>
+  </div>
+  <p style="margin-top:1rem">
+    <button type="button" class="btn btn-primary" id="btnCap">Capture &amp; Mark Attendance</button>
+  </p>
+  <p id="msg" style="color:#94a3b8"></p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if sessions %}
+<script src="{{ url_for('static', filename='js/face_scan.js') }}"></script>
+<script>
+  var video = document.getElementById("cam");
+  var sel = document.getElementById("class_id");
+  var apiUrl = "{{ url_for('api.admin_live_mark') }}";
+
+  function updateHint() {
+    var opt = sel.options[sel.selectedIndex];
+    var w = opt.getAttribute("data-window");
+    var el = document.getElementById("window-hint");
+    if (w === "open") {
+      el.textContent = "Attendance window is open — scans will be accepted.";
+      el.style.color = "#4ade80";
+    } else if (w === "closed") {
+      el.textContent = "Attendance window has closed for this class (after first 10 minutes).";
+      el.style.color = "#f87171";
+    } else {
+      el.textContent = "Window state: " + w;
+      el.style.color = "#94a3b8";
+    }
+  }
+  sel.addEventListener("change", updateHint);
+  updateHint();
+
+  startWebcam(video, function (err) { notify(err, "error"); });
+
+  document.getElementById("btnCap").addEventListener("click", function () {
+    var dataUrl = captureDataUrl(video);
+    if (!dataUrl) {
+      notify("Camera not ready — wait a moment.", "warning");
+      return;
+    }
+    var cid = sel.value;
+    if (!cid) {
+      notify("Select a class.", "warning");
+      return;
+    }
+    document.getElementById("msg").textContent = "Processing…";
+    fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ image: dataUrl, class_id: parseInt(cid, 10) }),
+    })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (j) {
+        document.getElementById("msg").textContent = "";
+        if (j.ok) {
+          notify((j.message || "OK") + (j.student ? " — " + j.student : ""), "success");
+        } else {
+          notify(j.message || "Error", "error");
+        }
+      })
+      .catch(function () {
+        document.getElementById("msg").textContent = "";
+        notify("Network error", "error");
+      });
+  });
+</script>
+{% endif %}
+{% endblock %}

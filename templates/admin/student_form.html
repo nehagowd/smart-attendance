@@ -1,0 +1,153 @@
+{% extends "base_admin.html" %}
+{% block title %}{% if edit %}Edit{% else %}Add{% endif %} Student{% endblock %}
+{% block content %}
+<h1>{% if edit %}Edit{% else %}Register{% endif %} Student</h1>
+<div class="card">
+  <form method="post" enctype="multipart/form-data" id="studentForm">
+    {% if not edit %}
+    <label>Roll Number / USN</label>
+    <input type="text" name="usn" required value="{{ student.usn if student else '' }}">
+    {% else %}
+    <p><strong>USN:</strong> {{ student.usn }} (cannot change)</p>
+    {% endif %}
+    <label>Full Name</label>
+    <input type="text" name="full_name" required value="{{ student.full_name if student else '' }}">
+    <label>Department</label>
+    <input type="text" name="department" required placeholder="e.g. CSE" value="{{ student.department if student else '' }}">
+    <label>Semester</label>
+    <input type="number" name="semester" min="1" max="12" required value="{{ student.semester if student else '' }}">
+    {% if edit %}
+    <label>New Password (optional)</label>
+    <input type="text" name="password" placeholder="Leave blank to keep current">
+    {% endif %}
+
+    <label>Face registration (webcam)</label>
+    <p style="color:#94a3b8;font-size:0.9rem;margin-top:0">
+      {% if edit %}
+      Optionally capture more photos to improve recognition. New shots are added to the dataset folder.
+      {% else %}
+      Start the camera, then use <strong>Capture photo</strong> several times (3–5 frontal shots recommended). Photos are saved when you click Save — no file upload.
+      {% endif %}
+    </p>
+    <div class="video-wrap" style="max-width:480px;margin:0.75rem 0">
+      <video id="regCam" autoplay playsinline muted></video>
+    </div>
+    <p>
+      <button type="button" class="btn btn-ghost" id="btnStartCam">Start camera</button>
+      <button type="button" class="btn btn-primary" id="btnCapPhoto">Capture photo</button>
+      <button type="button" class="btn btn-ghost" id="btnStopCam">Stop camera</button>
+      <button type="button" class="btn btn-ghost" id="btnClearCaps">Clear captures</button>
+    </p>
+    <p id="capSummary" style="color:#94a3b8;font-size:0.9rem">0 photos captured</p>
+    <div id="thumbRow" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"></div>
+
+    {# Populated by JS for multipart POST — same field name as before so Flask unchanged #}
+    <input type="file" name="face_images" id="face_images" multiple tabindex="-1"
+      style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
+
+    <p style="color:#94a3b8;font-size:0.85rem">Stored under <code>dataset/&lt;USN&gt;/</code>; encodings are averaged for recognition.</p>
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-ghost" href="{{ url_for('admin.students_list') }}" id="btnCancel">Cancel</a>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/face_scan.js') }}"></script>
+<script>
+  var isEdit = {{ 'true' if edit else 'false' }};
+  var video = document.getElementById("regCam");
+  var fileInput = document.getElementById("face_images");
+  var thumbRow = document.getElementById("thumbRow");
+  var capSummary = document.getElementById("capSummary");
+  var capturedFiles = [];
+  var thumbUrls = [];
+
+  function rebuildFileInput() {
+    var dt = new DataTransfer();
+    capturedFiles.forEach(function (f) {
+      dt.items.add(f);
+    });
+    fileInput.files = dt.files;
+    capSummary.textContent = capturedFiles.length + " photo(s) ready to save";
+  }
+
+  function renderThumbs() {
+    thumbUrls.forEach(function (u) {
+      URL.revokeObjectURL(u);
+    });
+    thumbUrls = [];
+    thumbRow.innerHTML = "";
+    capturedFiles.forEach(function (f) {
+      var url = URL.createObjectURL(f);
+      thumbUrls.push(url);
+      var wrap = document.createElement("div");
+      wrap.style.cssText = "position:relative;border-radius:8px;overflow:hidden;border:1px solid rgba(148,163,184,0.3)";
+      var img = document.createElement("img");
+      img.src = url;
+      img.alt = "Capture";
+      img.style.cssText = "width:72px;height:72px;object-fit:cover;display:block";
+      var rm = document.createElement("button");
+      rm.type = "button";
+      rm.textContent = "×";
+      rm.title = "Remove";
+      rm.style.cssText = "position:absolute;top:0;right:0;width:22px;height:22px;padding:0;line-height:20px;font-size:14px;border:none;background:rgba(0,0,0,0.55);color:#fff;cursor:pointer;border-radius:0 0 0 6px";
+      rm.addEventListener("click", function () {
+        var i = capturedFiles.indexOf(f);
+        if (i >= 0) capturedFiles.splice(i, 1);
+        rebuildFileInput();
+        renderThumbs();
+      });
+      wrap.appendChild(img);
+      wrap.appendChild(rm);
+      thumbRow.appendChild(wrap);
+    });
+  }
+
+  document.getElementById("btnStartCam").addEventListener("click", function () {
+    startWebcam(video, function (msg) {
+      if (typeof notify === "function") notify(msg, "error");
+      else alert(msg);
+    });
+  });
+  document.getElementById("btnStopCam").addEventListener("click", function () {
+    stopWebcam(video);
+  });
+  document.getElementById("btnCapPhoto").addEventListener("click", function () {
+    var dataUrl = captureDataUrl(video, 0.9);
+    if (!dataUrl) {
+      if (typeof notify === "function") notify("Camera not ready — start camera and wait for preview.", "warning");
+      else alert("Camera not ready");
+      return;
+    }
+    var file = dataUrlToJpegFile(dataUrl, "webcam_" + Date.now() + ".jpg");
+    if (!file) return;
+    capturedFiles.push(file);
+    rebuildFileInput();
+    renderThumbs();
+    if (typeof notify === "function") notify("Photo added (" + capturedFiles.length + ")", "success");
+  });
+  document.getElementById("btnClearCaps").addEventListener("click", function () {
+    capturedFiles = [];
+    rebuildFileInput();
+    renderThumbs();
+  });
+
+  document.getElementById("studentForm").addEventListener("submit", function (e) {
+    if (!isEdit && capturedFiles.length === 0) {
+      e.preventDefault();
+      if (typeof notify === "function") notify("Capture at least one face photo with the webcam before saving.", "error");
+      else alert("Capture at least one face photo.");
+      return;
+    }
+    stopWebcam(video);
+  });
+
+  document.getElementById("btnCancel").addEventListener("click", function () {
+    stopWebcam(video);
+  });
+  window.addEventListener("beforeunload", function () {
+    stopWebcam(video);
+  });
+</script>
+{% endblock %}

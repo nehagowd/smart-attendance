@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Attendance System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="hero-landing card" style="margin:2rem auto">
+    <h1>Smart Attendance System</h1>
+    <p>Face recognition with dynamic class scheduling — B.Tech mini project</p>
+    <div class="hero-btns">
+      <a class="btn btn-primary" href="{{ url_for('auth.admin_login') }}">Admin Login</a>
+      <a class="btn btn-ghost" href="{{ url_for('auth.student_login') }}">Student Login</a>
+    </div>
+    <p style="margin-top:2rem;font-size:0.85rem;color:#94a3b8">
+      Default admin: <strong>admin</strong> / <strong>admin123</strong>
+    </p>
+  </div>
+</body>
+</html>

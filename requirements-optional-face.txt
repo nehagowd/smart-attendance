@@ -1,0 +1,2 @@
+# Optional: higher-quality 128-D face embeddings (needs dlib — use Conda on Windows)
+face_recognition>=1.3.0

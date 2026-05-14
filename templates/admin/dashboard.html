@@ -1,0 +1,51 @@
+{% extends "base_admin.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="grid cols-3">
+  <div class="stat card">
+    <div class="num">{{ total_students }}</div>
+    <div class="lbl">Total Students</div>
+  </div>
+  <div class="stat card">
+    <div class="num">{{ present_count }}</div>
+    <div class="lbl">Present Records</div>
+  </div>
+  <div class="stat card">
+    <div class="num">{{ absent_count }}</div>
+    <div class="lbl">Absent Records</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Subject-wise attendance %</h2>
+  <p style="color:#94a3b8;font-size:0.9rem">Among recorded attendance rows</p>
+  {% for s in subj_stats %}
+  <div style="margin-bottom:0.75rem">
+    <div style="display:flex;justify-content:space-between">
+      <span>{{ s.name }}</span>
+      <span>{{ s.pct }}%</span>
+    </div>
+    <div class="bar"><span style="width:{{ s.pct }}%"></span></div>
+  </div>
+  {% else %}
+  <p>No data yet.</p>
+  {% endfor %}
+</div>
+
+<div class="grid cols-2">
+  <div class="card">
+    <h2>Today's marks</h2>
+    <p class="num" style="font-size:2.5rem">{{ today_marks }}</p>
+    <p style="color:#94a3b8">Attendance entries recorded today</p>
+  </div>
+  <div class="card">
+    <h2>Department-wise %</h2>
+    {% for d in dept_stats %}
+    <p><strong>{{ d.dept }}</strong>: {{ d.pct }}% ({{ d.present }}/{{ d.total }})</p>
+    {% else %}
+    <p>No data.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

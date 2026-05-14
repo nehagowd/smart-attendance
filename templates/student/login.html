@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="card login-card">
+    <h2>Student Login</h2>
+    <p style="color:#94a3b8;font-size:0.9rem">Username = USN/Roll · Password = your full name (as registered)</p>
+    {% if error %}<p class="error-msg">{{ error }}</p>{% endif %}
+    <form method="post">
+      <label>USN / Roll Number</label>
+      <input type="text" name="usn" required autocomplete="username">
+      <label>Password (full name)</label>
+      <input type="password" name="password" required autocomplete="current-password">
+      <button class="btn btn-primary" type="submit">Login</button>
+      <a class="btn btn-ghost" href="{{ url_for('auth.home') }}">Back</a>
+    </form>
+  </div>
+</body>
+</html>

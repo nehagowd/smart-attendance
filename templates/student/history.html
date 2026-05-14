@@ -1,0 +1,25 @@
+{% extends "base_student.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1>My Attendance History</h1>
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Subject</th><th>Class date</th><th>Slot</th><th>Marked at</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.subject_name }}</td>
+        <td>{{ r.class_date }}</td>
+        <td>{{ r.start_time }}–{{ r.end_time }}</td>
+        <td>{{ r.attendance_time }}</td>
+        <td>{{ r.status }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">No records yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

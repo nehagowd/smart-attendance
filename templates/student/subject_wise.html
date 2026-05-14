@@ -1,0 +1,18 @@
+{% extends "base_student.html" %}
+{% block title %}Subject-wise{% endblock %}
+{% block content %}
+<h1>Subject-wise Attendance</h1>
+<div class="card">
+  {% for s in stats %}
+  <div style="margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between">
+      <span>{{ s.name }}</span>
+      <span>{{ s.pct }}% ({{ s.present }}/{{ s.total }})</span>
+    </div>
+    <div class="bar"><span style="width:{{ s.pct }}%"></span></div>
+  </div>
+  {% else %}
+  <p>No attendance data yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

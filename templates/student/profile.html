@@ -1,0 +1,12 @@
+{% extends "base_student.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<h1>Profile</h1>
+<div class="card">
+  <p><strong>Name:</strong> {{ student.full_name }}</p>
+  <p><strong>USN:</strong> {{ student.usn }}</p>
+  <p><strong>Department:</strong> {{ student.department }}</p>
+  <p><strong>Semester:</strong> {{ student.semester }}</p>
+  <p style="color:#94a3b8;font-size:0.9rem">To change details or reset password, contact your administrator.</p>
+</div>
+{% endblock %}

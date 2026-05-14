@@ -1,0 +1,33 @@
+{% extends "base_admin.html" %}
+{% block title %}Subjects{% endblock %}
+{% block content %}
+<h1>Subjects</h1>
+<div class="card">
+  <h3>Add subject</h3>
+  <form method="post">
+    <label>Subject code</label>
+    <input type="text" name="subject_code" required placeholder="18CS51">
+    <label>Subject name</label>
+    <input type="text" name="subject_name" required>
+    <button class="btn btn-primary" type="submit">Add</button>
+  </form>
+</div>
+<div class="card">
+  <table>
+    <thead><tr><th>Code</th><th>Name</th><th></th></tr></thead>
+    <tbody>
+      {% for s in subjects %}
+      <tr>
+        <td>{{ s.subject_code }}</td>
+        <td>{{ s.subject_name }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.subjects_delete', sid=s.id) }}" style="display:inline" onsubmit="return confirm('Delete subject?');">
+            <button type="submit" class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

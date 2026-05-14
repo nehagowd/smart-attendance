@@ -1,0 +1,32 @@
+{% set flash_msgs = get_flashed_messages(with_categories=true) %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Student{% endblock %} — Smart Attendance</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body {% if flash_msgs %}data-flash='{{ flash_msgs|tojson }}'{% endif %}>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1>Smart Attendance<br><small style="font-weight:400;color:#64748b">Student</small></h1>
+      <nav>
+        <a href="{{ url_for('student.student_dashboard') }}" class="{% if request.endpoint == 'student.student_dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('student.today_classes') }}" class="{% if request.endpoint == 'student.today_classes' %}active{% endif %}">Today's Classes</a>
+        <a href="{{ url_for('student.mark_attendance_page') }}" class="{% if request.endpoint == 'student.mark_attendance_page' %}active{% endif %}">Mark Attendance</a>
+        <a href="{{ url_for('student.attendance_history') }}" class="{% if request.endpoint == 'student.attendance_history' %}active{% endif %}">Attendance History</a>
+        <a href="{{ url_for('student.subject_wise') }}" class="{% if request.endpoint == 'student.subject_wise' %}active{% endif %}">Subject-wise</a>
+        <a href="{{ url_for('student.profile') }}" class="{% if request.endpoint == 'student.profile' %}active{% endif %}">Profile</a>
+        <a href="{{ url_for('auth.home') }}">Home</a>
+        <a href="{{ url_for('auth.student_logout') }}">Logout</a>
+      </nav>
+    </aside>
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

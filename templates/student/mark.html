@@ -1,0 +1,63 @@
+{% extends "base_student.html" %}
+{% block title %}Mark Attendance{% endblock %}
+{% block content %}
+<h1>Mark Attendance</h1>
+<div class="card">
+  {% if not subject %}
+  <p class="error-msg">No Active Class Right Now</p>
+  {% elif state == 'closed' %}
+  <p class="error-msg">Attendance Closed for This Class</p>
+  {% elif state != 'open' %}
+  <p class="error-msg">Attendance is only available during the first 10 minutes after class start.</p>
+  {% else %}
+  <p><strong>{{ subject.subject_name }}</strong> — please align your face and capture.</p>
+  <div class="video-wrap">
+    <video id="cam" autoplay playsinline muted></video>
+  </div>
+  <p style="margin-top:1rem">
+    <button type="button" class="btn btn-primary" id="btnCap">Capture &amp; Submit</button>
+  </p>
+  <p id="msg" style="color:#94a3b8"></p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if subject and state == 'open' %}
+<script src="{{ url_for('static', filename='js/face_scan.js') }}"></script>
+<script>
+  var video = document.getElementById("cam");
+  var apiUrl = "{{ url_for('api.student_mark_attendance') }}";
+  startWebcam(video, function (err) { notify(err, "error"); });
+  document.getElementById("btnCap").addEventListener("click", function () {
+    var dataUrl = captureDataUrl(video);
+    if (!dataUrl) {
+      notify("Camera not ready — wait a moment.", "warning");
+      return;
+    }
+    document.getElementById("msg").textContent = "Processing…";
+    fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ image: dataUrl }),
+    })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (j) {
+        document.getElementById("msg").textContent = "";
+        if (j.ok) {
+          notify(j.message || "Attendance Marked Successfully", "success");
+        } else {
+          notify(j.message || "Error", "error");
+        }
+      })
+      .catch(function () {
+        document.getElementById("msg").textContent = "";
+        notify("Network error", "error");
+      });
+  });
+</script>
+{% endif %}
+{% endblock %}
