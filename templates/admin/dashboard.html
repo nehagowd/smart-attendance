@@ -23,7 +23,7 @@
   {% for s in subj_stats %}
   <div style="margin-bottom:0.75rem">
     <div style="display:flex;justify-content:space-between">
-      <span>{{ s.name }}</span>
+      <span>{{ s.studentname }}</span>
       <span>{{ s.pct }}%</span>
     </div>
     <div class="bar"><span style="width:{{ s.pct }}%"></span></div>
@@ -48,4 +48,76 @@
     {% endfor %}
   </div>
 </div>
+
+
+<div class="grid cols-2">
+
+  <!-- Present Students -->
+  <div class="card">
+    <h2>Present Students</h2>
+
+    <table style="width:100%; border-collapse:collapse;">
+      <tr>
+        <th style="padding:10px; border:1px solid #ddd;">Name</th>
+        <th style="padding:10px; border:1px solid #ddd;">USN</th>
+      </tr>
+
+      {% for student in present_students %}
+      <tr>
+        <td style="padding:10px; border:1px solid #ddd;">
+          {{ student[1] }}
+        </td>
+        <td style="padding:10px; border:1px solid #ddd;">
+          {{ student[2] }}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="2" style="padding:10px;">
+          No present students
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Absent Students -->
+  <div class="card">
+    <h2>Absent Students</h2>
+
+    <table style="width:100%; border-collapse:collapse;">
+      <tr>
+        <th style="padding:10px; border:1px solid #ddd;">Name</th>
+        <th style="padding:10px; border:1px solid #ddd;">USN</th>
+      </tr>
+
+      {% for student in absent_students %}
+      <tr>
+        <td style="padding:10px; border:1px solid #ddd;">
+          {{ student[1] }}
+        </td>
+        <td style="padding:10px; border:1px solid #ddd;">
+          {{ student[2] }}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="2" style="padding:10px;">
+          No absent students
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+</div>
+
+</div>
+
+<!-- Present/Absent students code -->
+
+<div class="grid cols-2">
+   
+</div>
+
 {% endblock %}

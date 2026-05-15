@@ -80,7 +80,7 @@ def dashboard():
         """
     ).fetchall()
 
-    conn.close()
+    
 
     subj_stats = []
     for r in subj_rows:
@@ -97,6 +97,28 @@ def dashboard():
         pr = r["present_cnt"] or 0
         pct = round(100.0 * pr / tot, 1) if tot else 0.0
         dept_stats.append({"dept": r["department"], "total": tot, "present": pr, "pct": pct})
+    
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM students")
+   
+    all_students = cur.fetchall()
+
+    
+    cur.execute("""
+    SELECT DISTINCT s.*
+    FROM students s
+    JOIN attendance a ON s.id = a.student_id
+    WHERE a.status='Present'
+""")
+    present_students = cur.fetchall()
+
+    present_usns = [s["usn"] for s in present_students]
+
+    absent_students = [
+            s for s in all_students
+            if s["usn"] not in present_usns
+    ]
+    conn.close()
 
     return render_template(
         "admin/dashboard.html",
@@ -106,6 +128,8 @@ def dashboard():
         absent_count=pa.get("Absent", 0),
         today_marks=today_rows,
         dept_stats=dept_stats,
+           present_students=present_students,
+        absent_students=absent_students,
     )
 
 
